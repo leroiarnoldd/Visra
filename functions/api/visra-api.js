@@ -9,7 +9,16 @@ export async function onRequestPost(context) {
   };
 
   try {
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch (e) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid JSON in request body' }),
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
     const { prompt, useSearch } = body;
 
     if (!prompt) {
@@ -19,45 +28,49 @@ export async function onRequestPost(context) {
       );
     }
 
-    // Build Anthropic request
+    if (!env.ANTHROPIC_API_KEY) {
+      return new Response(
+        JSON.stringify({ error: 'API key not configured on server' }),
+        { status: 500, headers: corsHeaders }
+      );
+    }
+
     const payload = {
       model: 'claude-sonnet-4-20250514',
       max_tokens: 2000,
       messages: [{ role: 'user', content: prompt }],
     };
 
-    if (useSearch) {
-      payload.tools = [{ type: 'web_search_20250305', name: 'web_search' }];
-    }
-
-    const anthropicHeaders = {
-      'Content-Type': 'application/json',
-      'x-api-key': env.ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01',
-    };
-
-    if (useSearch) {
-      anthropicHeaders['anthropic-beta'] = 'web-search-2025-03-05';
-    }
-
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: anthropicHeaders,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
       body: JSON.stringify(payload),
     });
 
+    const responseText = await response.text();
+
     if (!response.ok) {
-      const errText = await response.text();
       return new Response(
-        JSON.stringify({ error: 'Anthropic API error', detail: errText }),
+        JSON.stringify({ error: 'Anthropic error', detail: responseText }),
         { status: response.status, headers: corsHeaders }
       );
     }
 
-    const data = await response.json();
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      return new Response(
+        JSON.stringify({ error: 'Bad response from API' }),
+        { status: 500, headers: corsHeaders }
+      );
+    }
 
-    // Extract text blocks only
-    const text = data.content
+    const text = (data.content || [])
       .filter(b => b.type === 'text')
       .map(b => b.text || '')
       .join('');
