@@ -1238,8 +1238,6 @@ const C = ["Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Bar
   if (!s) return;
   C.forEach(c => s.innerHTML += `<option value="${c}">${c}</option>`);
 });
-addTrip(true);
-
 // Nav
 function toggleMenu() {
   document.getElementById('hbg').classList.toggle('open');
@@ -1272,31 +1270,45 @@ function swTool(t) {
   document.querySelectorAll('.pill')[pillMap[t]]?.classList.add('active');
 }
 
-// ── SECURE API PROXY ──
-// All requests go through Cloudflare Pages Function.
-// Your Anthropic API key is never exposed in the frontend.
-const API_ENDPOINT = '/api/visra-api';
-
+// API — standard (no search)
 async function api(prompt) {
-  const r = await fetch(API_ENDPOINT, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt, useSearch: false }),
+  const r = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 1000,
+      messages: [{role: "user", content: prompt}]
+    })
   });
-  if (!r.ok) throw new Error(`API error ${r.status}`);
   const d = await r.json();
-  return JSON.parse(d.text.replace(/```json|```/g, '').trim());
+  return JSON.parse(d.content.map(i => i.text || '').join('').replace(/```json|```/g,'').trim());
 }
 
+// API — with live web search for current visa data
 async function apiWithSearch(prompt) {
-  const r = await fetch(API_ENDPOINT, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt, useSearch: true }),
+  const r = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 1000,
+      tools: [
+        {
+          type: "web_search_20250305",
+          name: "web_search"
+        }
+      ],
+      messages: [{role: "user", content: prompt}]
+    })
   });
-  if (!r.ok) throw new Error(`API error ${r.status}`);
   const d = await r.json();
-  return JSON.parse(d.text.replace(/```json|```/g, '').trim());
+  // Extract text from all content blocks (includes tool results + final answer)
+  const text = d.content
+    .filter(b => b.type === 'text')
+    .map(b => b.text || '')
+    .join('');
+  return JSON.parse(text.replace(/```json|```/g,'').trim());
 }
 const sv = v => (v == null) ? '—' : String(v);
 
@@ -1446,22 +1458,21 @@ Return ONLY valid JSON: {"min_months_required":6,"blank_pages":1,"special":"any 
 }
 
 // SCHENGEN
-let tripCount = 0;
 function addTrip(first) {
-  tripCount++;
+  window.tripCount = (window.tripCount || 0) + 1;
   const div = document.createElement('div');
   div.style.marginBottom = '14px';
   div.innerHTML = `
     <div class="f-row-2">
       <div class="field" style="margin-bottom:0">
-        <label>Trip ${first ? '1' : tripCount} — Entry into Schengen</label>
+        <label>Trip ${first ? '1' : window.tripCount} — Entry into Schengen</label>
         <input type="date" class="f-input se">
       </div>
       <div class="field" style="margin-bottom:0">
         <label>Exit from Schengen</label>
         <input type="date" class="f-input sx">
       </div>
-    </div>`;
+    </div>\`;
   document.getElementById('strip').appendChild(div);
 }
 function calcSch() {
@@ -1783,6 +1794,7 @@ function scrollToCommunity() {
 }
 
 // Init
+addTrip(true);
 loadReports();
 </script>
 </body>
