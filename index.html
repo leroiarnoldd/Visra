@@ -1460,19 +1460,18 @@ Return ONLY valid JSON: {"min_months_required":6,"blank_pages":1,"special":"any 
 // SCHENGEN
 function addTrip(first) {
   window.tripCount = (window.tripCount || 0) + 1;
+  const n = first ? '1' : window.tripCount;
   const div = document.createElement('div');
   div.style.marginBottom = '14px';
-  div.innerHTML = `
-    <div class="f-row-2">
-      <div class="field" style="margin-bottom:0">
-        <label>Trip ${first ? '1' : window.tripCount} — Entry into Schengen</label>
-        <input type="date" class="f-input se">
-      </div>
-      <div class="field" style="margin-bottom:0">
-        <label>Exit from Schengen</label>
-        <input type="date" class="f-input sx">
-      </div>
-    </div>\`;
+  div.innerHTML = '<div class="f-row-2">'
+    + '<div class="field" style="margin-bottom:0">'
+    + '<label>Trip ' + n + ' — Entry into Schengen</label>'
+    + '<input type="date" class="f-input se">'
+    + '</div>'
+    + '<div class="field" style="margin-bottom:0">'
+    + '<label>Exit from Schengen</label>'
+    + '<input type="date" class="f-input sx">'
+    + '</div></div>';
   document.getElementById('strip').appendChild(div);
 }
 function calcSch() {
