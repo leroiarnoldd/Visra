@@ -1157,7 +1157,7 @@ function scrollToCommunity() {
 // API HELPERS
 // ══════════════════════════════════════════
 async function apiWithSearch(prompt) {
-  const r = await fetch("https://api.anthropic.com/v1/messages", {
+  const r = await fetch("https://visra-api.YOUR-SUBDOMAIN.workers.dev", {
     method: "POST",
     headers: {"Content-Type":"application/json"},
     body: JSON.stringify({
