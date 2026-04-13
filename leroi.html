@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Visra Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Source Sans 3', sans-serif; background: #f0f3f8; color: #0d1b35; min-height: 100vh; }
+
+/* LOGIN */
+.login-wrap {
+  min-height: 100vh; display: flex;
+  align-items: center; justify-content: center;
+  padding: 20px;
+}
+.login-box {
+  background: #fff; border-radius: 16px;
+  padding: 40px; width: 100%; max-width: 380px;
+  box-shadow: 0 8px 40px rgba(0,31,91,.1);
+  text-align: center;
+}
+.login-logo {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 28px; font-weight: 800; color: #001f5b;
+  margin-bottom: 4px;
+}
+.login-logo b { color: #c8102e; }
+.login-sub { font-size: 13px; color: #5a6a8a; margin-bottom: 28px; }
+.login-input {
+  width: 100%; padding: 13px 16px;
+  border: 1.5px solid #cdd5e5; border-radius: 10px;
+  font-family: 'Source Sans 3', sans-serif; font-size: 15px;
+  background: #f0f3f8; margin-bottom: 14px;
+  transition: all .18s;
+}
+.login-input:focus { outline: none; border-color: #1a3fa0; background: #fff; }
+.login-btn {
+  width: 100%; padding: 13px;
+  background: #001f5b; color: #fff;
+  border: none; border-radius: 10px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  transition: all .18s;
+}
+.login-btn:hover { background: #00297a; }
+.login-err { color: #c8102e; font-size: 13px; margin-top: 10px; display: none; }
+
+/* ADMIN PANEL */
+.admin-wrap { display: none; }
+.admin-nav {
+  background: #001f5b; padding: 0 28px;
+  height: 60px; display: flex; align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+}
+.admin-logo {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 20px; font-weight: 800; color: #fff;
+}
+.admin-logo b { color: #c8102e; }
+.admin-nav-right { display: flex; align-items: center; gap: 16px; }
+.badge {
+  background: #c8102e; color: #fff;
+  font-size: 12px; font-weight: 700;
+  padding: 4px 10px; border-radius: 100px;
+}
+.logout-btn {
+  background: rgba(255,255,255,.1); color: rgba(255,255,255,.7);
+  border: 1px solid rgba(255,255,255,.2); border-radius: 8px;
+  padding: 7px 14px; font-size: 13px; cursor: pointer;
+  font-family: 'Source Sans 3', sans-serif;
+  transition: all .15s;
+}
+.logout-btn:hover { background: rgba(255,255,255,.2); color: #fff; }
+
+.admin-body { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+.admin-header { margin-bottom: 28px; }
+.admin-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 26px; font-weight: 800; color: #001f5b;
+  margin-bottom: 6px;
+}
+.admin-desc { font-size: 14px; color: #5a6a8a; }
+
+/* TABS */
+.tab-row { display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 1px solid #cdd5e5; }
+.tab {
+  padding: 10px 20px; font-size: 13px; font-weight: 600;
+  color: #5a6a8a; background: none; border: none;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  cursor: pointer; font-family: 'Source Sans 3', sans-serif;
+  transition: all .15s; white-space: nowrap;
+}
+.tab:hover { color: #001f5b; }
+.tab.active { color: #001f5b; border-bottom-color: #c8102e; }
+
+/* REPORT CARDS */
+.reports-list { display: flex; flex-direction: column; gap: 14px; }
+.report-card {
+  background: #fff; border: 1px solid #cdd5e5;
+  border-radius: 14px; padding: 22px 24px;
+  transition: all .15s;
+}
+.report-card.pending { border-left: 4px solid #f0b429; }
+.report-card.approved { border-left: 4px solid #00875a; opacity: .75; }
+.report-card.rejected { border-left: 4px solid #c8102e; opacity: .6; }
+.rc-top {
+  display: flex; align-items: flex-start;
+  justify-content: space-between; gap: 16px;
+  margin-bottom: 14px; flex-wrap: wrap;
+}
+.rc-route {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 17px; font-weight: 700; color: #001f5b;
+}
+.rc-visa { font-size: 12px; color: #5a6a8a; margin-top: 3px; }
+.rc-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.btn-approve {
+  padding: 8px 18px; background: #00875a; color: #fff;
+  border: none; border-radius: 8px; font-size: 13px;
+  font-weight: 700; cursor: pointer; transition: all .15s;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.btn-approve:hover { background: #006b47; }
+.btn-reject {
+  padding: 8px 18px; background: #fff0f0; color: #c8102e;
+  border: 1px solid #f0a3a3; border-radius: 8px; font-size: 13px;
+  font-weight: 700; cursor: pointer; transition: all .15s;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.btn-reject:hover { background: #c8102e; color: #fff; }
+.rc-meta {
+  display: flex; gap: 20px; flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.rc-meta-item { }
+.rc-meta-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1px; color: #5a6a8a; margin-bottom: 2px;
+}
+.rc-meta-value { font-size: 13px; font-weight: 600; color: #0d1b35; }
+.rc-tip {
+  font-size: 14px; color: #2a3a55; line-height: 1.65;
+  font-style: italic; padding: 12px 16px;
+  background: #f0f3f8; border-radius: 8px;
+  margin-bottom: 12px;
+}
+.rc-footer {
+  display: flex; align-items: center;
+  justify-content: space-between; flex-wrap: wrap; gap: 8px;
+}
+.rc-author { font-size: 12px; color: #5a6a8a; font-weight: 600; }
+.rc-date { font-size: 12px; color: #5a6a8a; }
+.rc-status {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .5px; padding: 3px 10px; border-radius: 100px;
+}
+.rc-status.pending { background: #fff8e8; color: #b87000; }
+.rc-status.approved { background: #e8f8ee; color: #00875a; }
+.rc-status.rejected { background: #fff0f0; color: #c8102e; }
+
+.stars { color: #c9a84c; font-size: 13px; }
+
+.empty-state {
+  text-align: center; padding: 48px 24px;
+  background: #fff; border-radius: 14px;
+  border: 1px dashed #cdd5e5;
+}
+.empty-state p { color: #5a6a8a; font-size: 15px; }
+
+.loading {
+  text-align: center; padding: 40px;
+  color: #5a6a8a; font-size: 15px;
+}
+
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: #001f5b; color: #fff;
+  padding: 12px 20px; border-radius: 10px;
+  font-size: 14px; font-weight: 600;
+  box-shadow: 0 4px 20px rgba(0,0,0,.2);
+  opacity: 0; transition: opacity .3s;
+  pointer-events: none; z-index: 999;
+}
+.toast.show { opacity: 1; }
+
+.stats-row {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 12px; margin-bottom: 28px;
+}
+.stat-card {
+  background: #fff; border: 1px solid #cdd5e5;
+  border-radius: 12px; padding: 18px 20px;
+}
+.stat-n {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 32px; font-weight: 800; color: #001f5b;
+}
+.stat-l { font-size: 13px; color: #5a6a8a; margin-top: 4px; }
+
+@media(max-width: 640px) {
+  .stats-row { grid-template-columns: 1fr 1fr; }
+  .admin-body { padding: 20px 16px; }
+  .rc-top { flex-direction: column; }
+  .rc-actions { width: 100%; }
+  .btn-approve, .btn-reject { flex: 1; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="login-wrap">
+  <div class="login-box">
+    <div class="login-logo">Vis<b>ra</b></div>
+    <div class="login-sub">Admin — Report Moderation</div>
+    <input type="password" class="login-input" id="pw-input"
+      placeholder="Enter admin password"
+      onkeydown="if(event.key==='Enter') doLogin()">
+    <button class="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="login-err" id="login-err">Incorrect password</div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="admin-wrap" id="admin-wrap">
+  <nav class="admin-nav">
+    <div class="admin-logo">Vis<b>ra</b> Admin</div>
+    <div class="admin-nav-right">
+      <span class="badge" id="pending-badge">0 pending</span>
+      <button class="logout-btn" onclick="doLogout()">Sign out</button>
+    </div>
+  </nav>
+
+  <div class="admin-body">
+    <div class="admin-header">
+      <div class="admin-title">Traveller Reports</div>
+      <div class="admin-desc">Review and moderate community reports before they appear publicly on Visra.</div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-n" id="s-total">—</div><div class="stat-l">Total reports</div></div>
+      <div class="stat-card"><div class="stat-n" id="s-pending" style="color:#b87000">—</div><div class="stat-l">Pending review</div></div>
+      <div class="stat-card"><div class="stat-n" id="s-approved" style="color:#00875a">—</div><div class="stat-l">Approved</div></div>
+      <div class="stat-card"><div class="stat-n" id="s-rejected" style="color:#c8102e">—</div><div class="stat-l">Rejected</div></div>
+    </div>
+
+    <div class="tab-row">
+      <button class="tab active" onclick="showTab('pending')">Pending</button>
+      <button class="tab" onclick="showTab('approved')">Approved</button>
+      <button class="tab" onclick="showTab('rejected')">Rejected</button>
+      <button class="tab" onclick="showTab('all')">All</button>
+    </div>
+
+    <div id="reports-container">
+      <div class="loading">Loading reports...</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var SUPABASE_URL = 'https://duacsvzmzredmxkawmcl.supabase.co';
+var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1YWNzdnptenJlZG14a2F3bWNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3NDY1NDksImV4cCI6MjA5MTMyMjU0OX0.8KCYU1uAs1XiG8d2Z_-A7j3RlNUJ7H27BQNjJslhj18';
+
+// Admin password — change this to whatever you want
+var ADMIN_PASSWORD = 'Visra@Admin2026';
+
+var currentTab = 'pending';
+var allReports = [];
+
+function doLogin() {
+  var pw = document.getElementById('pw-input').value;
+  if (pw === ADMIN_PASSWORD) {
+    document.getElementById('login-wrap').style.display = 'none';
+    document.getElementById('admin-wrap').style.display = 'block';
+    sessionStorage.setItem('visra-admin', '1');
+    loadAllReports();
+  } else {
+    document.getElementById('login-err').style.display = 'block';
+    document.getElementById('pw-input').value = '';
+  }
+}
+
+function doLogout() {
+  sessionStorage.removeItem('visra-admin');
+  document.getElementById('login-wrap').style.display = 'flex';
+  document.getElementById('admin-wrap').style.display = 'none';
+}
+
+// Auto-login if session exists
+if (sessionStorage.getItem('visra-admin') === '1') {
+  document.getElementById('login-wrap').style.display = 'none';
+  document.getElementById('admin-wrap').style.display = 'block';
+  loadAllReports();
+}
+
+async function loadAllReports() {
+  try {
+    var r = await fetch(SUPABASE_URL + '/rest/v1/traveller_reports?select=*&order=created_at.desc', {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+      }
+    });
+    if (!r.ok) throw new Error('Failed to load');
+    allReports = await r.json();
+    updateStats();
+    renderTab(currentTab);
+  } catch(e) {
+    document.getElementById('reports-container').innerHTML =
+      '<div class="empty-state"><p>Could not load reports: ' + e.message + '</p></div>';
+  }
+}
+
+function updateStats() {
+  var pending = allReports.filter(function(r){ return r.status === 'pending'; }).length;
+  var approved = allReports.filter(function(r){ return r.status === 'approved'; }).length;
+  var rejected = allReports.filter(function(r){ return r.status === 'rejected'; }).length;
+  document.getElementById('s-total').textContent = allReports.length;
+  document.getElementById('s-pending').textContent = pending;
+  document.getElementById('s-approved').textContent = approved;
+  document.getElementById('s-rejected').textContent = rejected;
+  document.getElementById('pending-badge').textContent = pending + ' pending';
+}
+
+function showTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+  event.target.classList.add('active');
+  renderTab(tab);
+}
+
+function renderTab(tab) {
+  var filtered = allReports;
+  if (tab !== 'all') {
+    filtered = allReports.filter(function(r){ return r.status === tab; });
+  }
+
+  if (!filtered.length) {
+    document.getElementById('reports-container').innerHTML =
+      '<div class="empty-state"><p>No ' + tab + ' reports.</p></div>';
+    return;
+  }
+
+  var html = '<div class="reports-list">';
+  filtered.forEach(function(r) {
+    var stars = '';
+    for (var i = 1; i <= 5; i++) {
+      stars += i <= (r.rating||0) ? '&#9733;' : '&#9734;';
+    }
+    var date = new Date(r.created_at).toLocaleDateString('en-GB', {
+      day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'
+    });
+    var approvedLabel = r.approved === 'yes' ? 'Approved' : r.approved === 'no' ? 'Rejected' : 'Pending';
+    var approvedColour = r.approved === 'yes' ? '#00875a' : r.approved === 'no' ? '#c8102e' : '#b87000';
+
+    html += '<div class="report-card ' + r.status + '">';
+    html += '<div class="rc-top">';
+    html += '<div><div class="rc-route">' + r.passport + ' &rarr; ' + r.destination + '</div>';
+    html += '<div class="rc-visa">' + r.visa_type + '</div></div>';
+    html += '<div class="rc-actions">';
+    if (r.status !== 'approved') {
+      html += '<button class="btn-approve" onclick="updateStatus(' + r.id + ',\'approved\')">Approve</button>';
+    }
+    if (r.status !== 'rejected') {
+      html += '<button class="btn-reject" onclick="updateStatus(' + r.id + ',\'rejected\')">Reject</button>';
+    }
+    if (r.status !== 'pending') {
+      html += '<button class="btn-reject" style="background:#f0f3f8;color:#5a6a8a;border-color:#cdd5e5" onclick="updateStatus(' + r.id + ',\'pending\')">Reset</button>';
+    }
+    html += '</div></div>';
+
+    html += '<div class="rc-meta">';
+    html += '<div class="rc-meta-item"><div class="rc-meta-label">Applied</div><div class="rc-meta-value">' + (r.applied_when||'—') + '</div></div>';
+    html += '<div class="rc-meta-item"><div class="rc-meta-label">Cost</div><div class="rc-meta-value">' + (r.cost||'—') + '</div></div>';
+    html += '<div class="rc-meta-item"><div class="rc-meta-label">Processing</div><div class="rc-meta-value">' + (r.processing_time||'—') + '</div></div>';
+    html += '<div class="rc-meta-item"><div class="rc-meta-label">Result</div><div class="rc-meta-value" style="color:' + approvedColour + '">' + approvedLabel + '</div></div>';
+    html += '<div class="rc-meta-item"><div class="rc-meta-label">Rating</div><div class="rc-meta-value"><span class="stars">' + stars + '</span></div></div>';
+    html += '</div>';
+
+    html += '<div class="rc-tip">&ldquo;' + r.tip + '&rdquo;</div>';
+
+    html += '<div class="rc-footer">';
+    html += '<div class="rc-author">' + r.name + '</div>';
+    html += '<div style="display:flex;align-items:center;gap:10px">';
+    html += '<span class="rc-status ' + r.status + '">' + r.status + '</span>';
+    html += '<div class="rc-date">' + date + '</div>';
+    html += '</div></div>';
+
+    html += '</div>';
+  });
+  html += '</div>';
+  document.getElementById('reports-container').innerHTML = html;
+}
+
+async function updateStatus(id, status) {
+  try {
+    var r = await fetch(SUPABASE_URL + '/rest/v1/traveller_reports?id=eq.' + id, {
+      method: 'PATCH',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({ status: status })
+    });
+    if (!r.ok) throw new Error('Update failed');
+    showToast(status === 'approved' ? 'Report approved' : status === 'rejected' ? 'Report rejected' : 'Report reset to pending');
+    await loadAllReports();
+  } catch(e) {
+    showToast('Error: ' + e.message);
+  }
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2500);
+}
+</script>
+</body>
+</html>
