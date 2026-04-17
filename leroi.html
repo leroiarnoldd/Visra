@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Visra Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Source Sans 3', sans-serif; background: #f0f3f8; color: #0d1b35; min-height: 100vh; }
+.login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.login-box { background: #fff; border-radius: 16px; padding: 40px; width: 100%; max-width: 380px; box-shadow: 0 8px 40px rgba(0,31,91,.1); text-align: center; }
+.login-logo { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 28px; font-weight: 800; color: #001f5b; margin-bottom: 4px; }
+.login-logo b { color: #c8102e; }
+.login-sub { font-size: 13px; color: #5a6a8a; margin-bottom: 28px; }
+.login-input { width: 100%; padding: 13px 16px; border: 1.5px solid #cdd5e5; border-radius: 10px; font-family: 'Source Sans 3', sans-serif; font-size: 15px; background: #f0f3f8; margin-bottom: 14px; }
+.login-input:focus { outline: none; border-color: #1a3fa0; background: #fff; }
+.login-btn { width: 100%; padding: 13px; background: #001f5b; color: #fff; border: none; border-radius: 10px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; }
+.login-btn:hover { background: #00297a; }
+.login-err { color: #c8102e; font-size: 13px; margin-top: 10px; display: none; }
+.admin-wrap { display: none; }
+.admin-nav { background: #001f5b; padding: 0 28px; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.admin-logo { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 800; color: #fff; }
+.admin-logo b { color: #c8102e; }
+.pending-badge { background: #c8102e; color: #fff; font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 100px; }
+.logout-btn { background: rgba(255,255,255,.1); color: rgba(255,255,255,.7); border: 1px solid rgba(255,255,255,.2); border-radius: 8px; padding: 7px 14px; font-size: 13px; cursor: pointer; font-family: 'Source Sans 3', sans-serif; }
+.logout-btn:hover { background: rgba(255,255,255,.2); color: #fff; }
+.admin-body { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+.admin-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 26px; font-weight: 800; color: #001f5b; margin-bottom: 6px; }
+.admin-desc { font-size: 14px; color: #5a6a8a; margin-bottom: 28px; }
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
+.stat-card { background: #fff; border: 1px solid #cdd5e5; border-radius: 12px; padding: 18px 20px; }
+.stat-n { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 32px; font-weight: 800; color: #001f5b; }
+.stat-l { font-size: 13px; color: #5a6a8a; margin-top: 4px; }
+.tab-row { display: flex; gap: 0; margin-bottom: 24px; border-bottom: 2px solid #cdd5e5; }
+.tab { padding: 10px 22px; font-size: 13px; font-weight: 600; color: #5a6a8a; background: none; border: none; border-bottom: 3px solid transparent; margin-bottom: -2px; cursor: pointer; font-family: 'Source Sans 3', sans-serif; transition: all .15s; white-space: nowrap; }
+.tab:hover { color: #001f5b; }
+.tab.active { color: #001f5b; border-bottom-color: #c8102e; }
+.reports-list { display: flex; flex-direction: column; gap: 14px; }
+.report-card { background: #fff; border: 1px solid #cdd5e5; border-radius: 14px; padding: 22px 24px; }
+.report-card.pending { border-left: 4px solid #f0b429; }
+.report-card.approved { border-left: 4px solid #00875a; }
+.report-card.rejected { border-left: 4px solid #c8102e; opacity: .65; }
+.rc-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 14px; flex-wrap: wrap; }
+.rc-route { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 17px; font-weight: 700; color: #001f5b; }
+.rc-visa { font-size: 12px; color: #5a6a8a; margin-top: 3px; }
+.rc-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.btn-approve { padding: 8px 18px; background: #00875a; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; }
+.btn-approve:hover { background: #006b47; }
+.btn-reject { padding: 8px 18px; background: #fff0f0; color: #c8102e; border: 1px solid #f0a3a3; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; }
+.btn-reject:hover { background: #c8102e; color: #fff; border-color: #c8102e; }
+.btn-reset { padding: 8px 16px; background: #f0f3f8; color: #5a6a8a; border: 1px solid #cdd5e5; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.btn-reset:hover { border-color: #001f5b; color: #001f5b; }
+.rc-meta { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 12px; }
+.rc-meta-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #5a6a8a; margin-bottom: 2px; }
+.rc-meta-value { font-size: 13px; font-weight: 600; color: #0d1b35; }
+.rc-tip { font-size: 14px; color: #2a3a55; line-height: 1.65; font-style: italic; padding: 12px 16px; background: #f0f3f8; border-radius: 8px; margin-bottom: 12px; }
+.rc-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.rc-author { font-size: 12px; color: #5a6a8a; font-weight: 600; }
+.rc-date { font-size: 12px; color: #5a6a8a; }
+.status-badge { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; padding: 3px 10px; border-radius: 100px; }
+.status-badge.pending { background: #fff8e8; color: #b87000; }
+.status-badge.approved { background: #e8f8ee; color: #00875a; }
+.status-badge.rejected { background: #fff0f0; color: #c8102e; }
+.stars { color: #c9a84c; font-size: 14px; }
+.empty-state { text-align: center; padding: 48px 24px; background: #fff; border-radius: 14px; border: 1px dashed #cdd5e5; }
+.empty-state p { color: #5a6a8a; font-size: 15px; }
+.loading-msg { text-align: center; padding: 40px; color: #5a6a8a; font-size: 15px; }
+.toast { position: fixed; bottom: 24px; right: 24px; background: #001f5b; color: #fff; padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 20px rgba(0,0,0,.2); opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 999; }
+.toast.show { opacity: 1; }
+@media(max-width: 640px) {
+  .stats-row { grid-template-columns: 1fr 1fr; }
+  .admin-body { padding: 20px 16px; }
+  .rc-top { flex-direction: column; }
+  .rc-actions { width: 100%; }
+  .btn-approve, .btn-reject { flex: 1; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<div class="login-wrap" id="login-wrap">
+  <div class="login-box">
+    <div class="login-logo">Vis<b>ra</b></div>
+    <div class="login-sub">Admin — Report Moderation</div>
+    <input type="password" class="login-input" id="pw-input" placeholder="Enter admin password" onkeydown="if(event.key==='Enter') doLogin()">
+    <button class="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="login-err" id="login-err">Incorrect password. Try again.</div>
+  </div>
+</div>
+
+<div class="admin-wrap" id="admin-wrap">
+  <nav class="admin-nav">
+    <div class="admin-logo">Vis<b>ra</b> Admin</div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span class="pending-badge" id="pending-badge">0 pending</span>
+      <button class="logout-btn" onclick="doLogout()">Sign out</button>
+    </div>
+  </nav>
+  <div class="admin-body">
+    <div class="admin-title">Traveller Reports</div>
+    <div class="admin-desc">Review community reports before they go live on Visra. Approved reports appear publicly immediately.</div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-n" id="s-total">-</div><div class="stat-l">Total reports</div></div>
+      <div class="stat-card"><div class="stat-n" id="s-pending" style="color:#b87000">-</div><div class="stat-l">Awaiting review</div></div>
+      <div class="stat-card"><div class="stat-n" id="s-approved" style="color:#00875a">-</div><div class="stat-l">Approved</div></div>
+      <div class="stat-card"><div class="stat-n" id="s-rejected" style="color:#c8102e">-</div><div class="stat-l">Rejected</div></div>
+    </div>
+    <div class="tab-row">
+      <button class="tab active" onclick="showTab('pending',this)">Pending</button>
+      <button class="tab" onclick="showTab('approved',this)">Approved</button>
+      <button class="tab" onclick="showTab('rejected',this)">Rejected</button>
+      <button class="tab" onclick="showTab('all',this)">All Reports</button>
+    </div>
+    <div id="reports-container"><div class="loading-msg">Loading...</div></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var SB_URL = 'https://duacsvzmzredmxkawmcl.supabase.co';
+var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1YWNzdnptenJlZG14a2F3bWNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3NDY1NDksImV4cCI6MjA5MTMyMjU0OX0.8KCYU1uAs1XiG8d2Z_-A7j3RlNUJ7H27BQNjJslhj18';
+var PASS = 'Visra@Admin2026';
+var allReports = [];
+var currentTab = 'pending';
+
+window.onload = function() {
+  if (sessionStorage.getItem('va') === '1') showAdmin();
+};
+
+function doLogin() {
+  if (document.getElementById('pw-input').value === PASS) {
+    sessionStorage.setItem('va','1');
+    document.getElementById('login-err').style.display = 'none';
+    showAdmin();
+  } else {
+    document.getElementById('login-err').style.display = 'block';
+    document.getElementById('pw-input').value = '';
+  }
+}
+
+function doLogout() {
+  sessionStorage.removeItem('va');
+  document.getElementById('admin-wrap').style.display = 'none';
+  document.getElementById('login-wrap').style.display = 'flex';
+}
+
+function showAdmin() {
+  document.getElementById('login-wrap').style.display = 'none';
+  document.getElementById('admin-wrap').style.display = 'block';
+  loadSearchStats();
+  loadReports();
+}
+
+async function loadSearchStats() {
+  try {
+    // Fetch all searches at once and compute stats client-side
+    var r1 = await fetch(SB_URL + '/rest/v1/visa_searches?select=passport,destination,searched_at&order=searched_at.desc&limit=1000', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+    });
+    if (!r1.ok) throw new Error('Failed to load stats');
+    var searches = await r1.json();
+
+    var now = Date.now();
+    var weekAgo = now - 7*24*60*60*1000;
+    var todayStart = new Date(); todayStart.setHours(0,0,0,0);
+
+    var total = searches.length;
+    var week = searches.filter(function(s){ return new Date(s.searched_at).getTime() > weekAgo; }).length;
+    var today = searches.filter(function(s){ return new Date(s.searched_at) >= todayStart; }).length;
+
+    document.getElementById('ns-total').textContent = total;
+    document.getElementById('ns-week').textContent = week;
+    document.getElementById('ns-today').textContent = today;
+
+    // Top routes - already have searches from above
+    var routeCounts = {};
+    searches.forEach(function(s) {
+      var key = (s.passport || '') + ' -> ' + (s.destination || '');
+      routeCounts[key] = (routeCounts[key] || 0) + 1;
+    });
+    var sorted = Object.entries(routeCounts).sort(function(a,b){ return b[1]-a[1]; }).slice(0, 8);
+    var routeHtml = sorted.length ? sorted.map(function(r) {
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f3f8"><span style="font-size:14px;color:#0d1b35">' + r[0] + '</span><span style="font-size:13px;font-weight:700;color:#1a3fa0">' + r[1] + ' searches</span></div>';
+    }).join('') : '<div style="color:#5a6a8a;font-size:14px">No searches recorded yet.</div>';
+    document.getElementById('top-routes').innerHTML = routeHtml;
+  } catch(e) {
+    console.log('Stats error:', e);
+  }
+}
+
+async function loadReports() {
+  document.getElementById('reports-container').innerHTML = '<div class="loading-msg">Loading reports...</div>';
+  try {
+    var r = await fetch(SB_URL + '/rest/v1/traveller_reports?select=*&order=created_at.desc', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+    });
+    if (!r.ok) throw new Error('Load failed: ' + r.status);
+    allReports = await r.json();
+    updateStats();
+    renderTab(currentTab);
+  } catch(e) {
+    document.getElementById('reports-container').innerHTML = '<div class="empty-state"><p>Could not load: ' + e.message + '</p></div>';
+  }
+}
+
+function updateStats() {
+  var p = allReports.filter(function(r){ return r.status==='pending'; }).length;
+  var a = allReports.filter(function(r){ return r.status==='approved'; }).length;
+  var rej = allReports.filter(function(r){ return r.status==='rejected'; }).length;
+  document.getElementById('s-total').textContent = allReports.length;
+  document.getElementById('s-pending').textContent = p;
+  document.getElementById('s-approved').textContent = a;
+  document.getElementById('s-rejected').textContent = rej;
+  document.getElementById('pending-badge').textContent = p + ' pending';
+}
+
+function showTab(tab, btn) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  renderTab(tab);
+}
+
+function renderTab(tab) {
+  var list = tab === 'all' ? allReports : allReports.filter(function(r){ return r.status === tab; });
+  if (!list.length) {
+    document.getElementById('reports-container').innerHTML = '<div class="empty-state"><p>No ' + (tab==='all'?'':tab+' ') + 'reports.</p></div>';
+    return;
+  }
+  var h = '<div class="reports-list">';
+  list.forEach(function(r) {
+    var stars = '';
+    for (var i=1;i<=5;i++) stars += i<=(r.rating||0)?'&#9733;':'&#9734;';
+    var dt = new Date(r.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    var rc = r.approved==='yes'?'#00875a':r.approved==='no'?'#c8102e':'#b87000';
+    var rl = r.approved==='yes'?'Approved':r.approved==='no'?'Rejected':'Pending';
+    var st = r.status||'pending';
+    h += '<div class="report-card '+st+'">';
+    h += '<div class="rc-top"><div><div class="rc-route">'+(r.passport||'')+' &rarr; '+(r.destination||'')+'</div><div class="rc-visa">'+(r.visa_type||'')+'</div></div>';
+    h += '<div class="rc-actions">';
+    if (st!=='approved') h += '<button class="btn-approve" onclick="upd('+r.id+',\'approved\')">Approve</button>';
+    if (st!=='rejected') h += '<button class="btn-reject" onclick="upd('+r.id+',\'rejected\')">Reject</button>';
+    if (st!=='pending') h += '<button class="btn-reset" onclick="upd('+r.id+',\'pending\')">Reset</button>';
+    h += '</div></div>';
+    h += '<div class="rc-meta">';
+    h += '<div><div class="rc-meta-label">Applied</div><div class="rc-meta-value">'+(r.applied_when||'-')+'</div></div>';
+    h += '<div><div class="rc-meta-label">Cost</div><div class="rc-meta-value">'+(r.cost||'-')+'</div></div>';
+    h += '<div><div class="rc-meta-label">Processing</div><div class="rc-meta-value">'+(r.processing_time||'-')+'</div></div>';
+    h += '<div><div class="rc-meta-label">Outcome</div><div class="rc-meta-value" style="color:'+rc+'">'+rl+'</div></div>';
+    h += '<div><div class="rc-meta-label">Rating</div><div class="rc-meta-value stars">'+stars+'</div></div>';
+    h += '</div>';
+    h += '<div class="rc-tip">&ldquo;'+(r.tip||'')+'&rdquo;</div>';
+    h += '<div class="rc-footer"><div class="rc-author">'+(r.name||'Anonymous')+'</div>';
+    h += '<div style="display:flex;align-items:center;gap:10px"><span class="status-badge '+st+'">'+st+'</span><span class="rc-date">'+dt+'</span></div></div>';
+    h += '</div>';
+  });
+  h += '</div>';
+  document.getElementById('reports-container').innerHTML = h;
+}
+
+async function upd(id, status) {
+  try {
+    var r = await fetch(SB_URL + '/rest/v1/traveller_reports?id=eq.'+id, {
+      method: 'PATCH',
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer '+SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ status: status })
+    });
+    if (!r.ok) throw new Error('Failed: '+r.status);
+    var msgs = {approved:'Report approved - now live on Visra',rejected:'Report rejected',pending:'Reset to pending'};
+    toast(msgs[status]||'Updated');
+    await loadReports();
+  } catch(e) { toast('Error: '+e.message); }
+}
+
+function toast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2500);
+}
+</script>
+</body>
+</html>
