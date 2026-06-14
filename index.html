@@ -975,6 +975,7 @@ footer { background: var(--navy); padding: 32px 28px; }
 
     <!-- Right: Log in + Sign up + Hamburger -->
     <div class="nav-right">
+      <a href="/about" style="font-size:13px;color:#5a6a8a;text-decoration:none;font-weight:600;margin-right:16px">About</a>
       <button class="hamburger" id="hbg" onclick="toggleMenu()">
         <span></span><span></span><span></span>
       </button>
@@ -1559,14 +1560,38 @@ footer { background: var(--navy); padding: 32px 28px; }
       <div class="foot-tag">Visa Intelligence · Worldwide · Always verify with official sources before travel</div>
     </div>
     <div class="foot-links">
-      <a href="#">About</a>
+      <a href="/about">About</a>
       <a href="#">Roadmap</a>
-      <a href="#">Feedback</a>
+      <a href="#" onclick="openFeedback();return false;">Feedback</a>
       <a href="#" onclick="showPage('terms');return false;">Terms of Use</a>
       <a href="#" onclick="showPage('privacy');return false;">Privacy Policy</a>
     </div>
   </div>
 </footer>
+
+<!-- FEEDBACK / SUGGESTION BOX MODAL -->
+<div id="feedback-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:16px;padding:32px;max-width:520px;width:100%;position:relative">
+    <button onclick="closeFeedback()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:#5a6a8a">&times;</button>
+    <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#001f5b;margin-bottom:6px">Share your thoughts</div>
+    <div style="font-size:14px;color:#5a6a8a;margin-bottom:24px">What would make Visra better for you? Every suggestion goes directly to the team building it.</div>
+    <div style="margin-bottom:16px">
+      <label style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#5a6a8a;display:block;margin-bottom:6px">What were you trying to do?</label>
+      <input type="text" id="fb-task" placeholder="e.g. Find out if I need a visa for Canada" style="width:100%;padding:11px 14px;border:1.5px solid #cdd5e5;border-radius:8px;font-size:14px;font-family:'Source Sans 3',sans-serif">
+    </div>
+    <div style="margin-bottom:16px">
+      <label style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#5a6a8a;display:block;margin-bottom:6px">What felt missing or difficult?</label>
+      <textarea id="fb-issue" rows="3" placeholder="Tell us what you found confusing, missing, or could be better..." style="width:100%;padding:11px 14px;border:1.5px solid #cdd5e5;border-radius:8px;font-size:14px;font-family:'Source Sans 3',sans-serif;resize:vertical"></textarea>
+    </div>
+    <div style="margin-bottom:20px">
+      <label style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#5a6a8a;display:block;margin-bottom:6px">Your email (optional — if you want a response)</label>
+      <input type="email" id="fb-email" placeholder="your@email.com" style="width:100%;padding:11px 14px;border:1.5px solid #cdd5e5;border-radius:8px;font-size:14px;font-family:'Source Sans 3',sans-serif">
+    </div>
+    <button onclick="submitFeedback()" id="fb-btn" style="width:100%;padding:14px;background:#001f5b;color:#fff;border:none;border-radius:10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer">Send feedback</button>
+    <div id="fb-success" style="display:none;margin-top:16px;padding:12px;background:#e8f8ee;border-radius:8px;font-size:14px;color:#00875a;text-align:center;font-weight:600">Thank you — your feedback has been received.</div>
+    <div id="fb-error" style="display:none;margin-top:16px;padding:12px;background:#fff0f0;border-radius:8px;font-size:14px;color:#c8102e;text-align:center">Could not send. Please try again.</div>
+  </div>
+</div>
 
 <!-- TERMS OF USE MODAL -->
 <div class="legal-modal" id="terms-modal">
@@ -1786,6 +1811,23 @@ function swTool(t) {
 // All requests route through Cloudflare Pages Function.
 // Your Anthropic API key stays server-side and is never exposed.
 const API_ENDPOINT = '/api/visra-api';
+
+// Verified country-specific passport guidance (real lived-experience data)
+const VERIFIED_PASSPORT_DATA = {
+  'zimbabwe': {
+    renewal: {
+      time_needed: 'Set aside half a day - it gets busy very quickly, so arrive early',
+      documents: ['2 copies of your current passport','2 copies of your birth certificate','2 copies of your national ID (required if over 16)'],
+      photos: 'Do NOT take your own photos. They use a specific approved company on site. Photos cost around £20.',
+      costs: ['Passport application form: £65','Passport photos: £20','Document sending service to Zimbabwe: around £65','Form correction fee: £20 per mistake'],
+      key_warnings: ['Do not make any mistakes on the passport form - each correction costs an extra £20','Your fingerprints will be taken even if you have done it before','It is your responsibility to send the application to Zimbabwe for processing - there is a separate fee for this','The photo company on site offers a document sending service for around £65','Arrive early - the place gets busy very quickly']
+    },
+    lost: {
+      extra_requirement: 'For a lost passport you will ALSO need a police report, in addition to all the standard renewal documents.',
+      documents: ['Police report (for the lost passport)','2 copies of your birth certificate','2 copies of your national ID (required if over 16)']
+    }
+  }
+};
 
 async function api(prompt) {
   const r = await fetch(API_ENDPOINT, {
@@ -2575,6 +2617,54 @@ function loadMore() {
   renderReports();
 }
 
+// Feedback / suggestion box
+function openFeedback() {
+  var modal = document.getElementById('feedback-modal');
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeFeedback() {
+  var modal = document.getElementById('feedback-modal');
+  modal.style.display = 'none';
+  document.body.style.overflow = '';
+  document.getElementById('fb-task').value = '';
+  document.getElementById('fb-issue').value = '';
+  document.getElementById('fb-email').value = '';
+  document.getElementById('fb-success').style.display = 'none';
+  document.getElementById('fb-error').style.display = 'none';
+}
+
+async function submitFeedback() {
+  var task = document.getElementById('fb-task').value.trim();
+  var issue = document.getElementById('fb-issue').value.trim();
+  var email = document.getElementById('fb-email').value.trim();
+
+  if (!issue) { alert('Please tell us what felt missing or difficult.'); return; }
+
+  document.getElementById('fb-btn').disabled = true;
+  document.getElementById('fb-btn').textContent = 'Sending...';
+
+  try {
+    await fetch('https://duacsvzmzredmxkawmcl.supabase.co/rest/v1/feedback', {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({ task: task, issue: issue, email: email, submitted_at: new Date().toISOString() })
+    });
+    document.getElementById('fb-success').style.display = 'block';
+    document.getElementById('fb-btn').style.display = 'none';
+  } catch(e) {
+    document.getElementById('fb-error').style.display = 'block';
+    document.getElementById('fb-btn').disabled = false;
+    document.getElementById('fb-btn').textContent = 'Send feedback';
+  }
+}
+
 // Track completed visa searches
 async function trackSearch(passport, destination, visaType) {
   try {
@@ -3198,7 +3288,7 @@ Return ONLY valid JSON no markdown:
     const warns = (x.important_warnings||[]).map(w => '<div class="ci ci-dark"><div class="ci-t">' + w + '</div></div>').join('');
     const etd = x.emergency_travel_document || {};
 
-    showR(`
+    var emerResult = `
       <div class="r-banner" style="background:var(--red2)">
         <div class="r-left">
           <div class="r-chip">Emergency</div>
@@ -3237,7 +3327,42 @@ Return ONLY valid JSON no markdown:
         ${warns ? '<div class="ib full dark"><h3>Important Warnings</h3><div class="cl">' + warns + '</div></div>' : ''}
       </div>
       <div class="disc"><strong>This is a guide only.</strong> Contact your embassy immediately - they are there to help you. Most embassies have 24-hour emergency lines for citizens in distress.</div>
-    `);
+    `;
+
+    // Append verified country-specific lost passport data
+    var emerCountry = p.toLowerCase();
+    var verifiedEmer = VERIFIED_PASSPORT_DATA[emerCountry];
+    if (verifiedEmer && verifiedEmer.lost) {
+      var ve = verifiedEmer.lost;
+      emerResult += '<div style="background:#fff;border:2px solid #00875a;border-radius:12px;padding:20px 24px;margin-top:16px">';
+      emerResult += '<div style="display:inline-block;background:#e8f8ee;color:#00875a;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:4px 12px;border-radius:100px;margin-bottom:14px">&#x2713; Verified by real travellers</div>';
+      emerResult += '<div style="font-family:Plus Jakarta Sans,sans-serif;font-size:16px;font-weight:800;color:#001f5b;margin-bottom:12px">' + p.charAt(0).toUpperCase() + p.slice(1) + ' lost passport - what you actually need</div>';
+      if (ve.extra_requirement) emerResult += '<div style="background:#fff0f0;border-radius:8px;padding:12px 16px;margin-bottom:14px;font-size:14px;color:#5a0010"><strong>Important:</strong> ' + ve.extra_requirement + '</div>';
+      if (ve.documents && ve.documents.length) {
+        emerResult += '<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#5a6a8a;margin-bottom:8px">Documents required</div>';
+        ve.documents.forEach(function(d){ emerResult += '<div style="display:flex;gap:8px;margin-bottom:5px;font-size:14px;color:#2a3a55"><span style="color:#00875a;font-weight:700">&#x2713;</span>' + d + '</div>'; });
+      }
+      // Also pull in the full renewal process since lost passport needs it too
+      if (verifiedEmer.renewal) {
+        var vr = verifiedEmer.renewal;
+        emerResult += '<div style="margin-top:16px;padding-top:16px;border-top:1px solid #e8ecf4">';
+        emerResult += '<div style="font-size:13px;font-weight:700;color:#001f5b;margin-bottom:10px">You will also go through the full application process:</div>';
+        if (vr.photos) emerResult += '<div style="background:#fff8e8;border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:13px;color:#5a3000"><strong>Photos:</strong> ' + vr.photos + '</div>';
+        if (vr.costs && vr.costs.length) {
+          vr.costs.forEach(function(c){ emerResult += '<div style="display:flex;gap:8px;margin-bottom:5px;font-size:13px;color:#2a3a55"><span style="color:#1a3fa0">&#163;</span>' + c + '</div>'; });
+        }
+        if (vr.key_warnings && vr.key_warnings.length) {
+          emerResult += '<div style="background:#fff0f0;border-radius:8px;padding:12px;margin-top:12px">';
+          emerResult += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#c8102e;margin-bottom:8px">Insider tips</div>';
+          vr.key_warnings.forEach(function(w){ emerResult += '<div style="display:flex;gap:8px;margin-bottom:6px;font-size:13px;color:#5a0010"><span>&#x26A0;</span>' + w + '</div>'; });
+          emerResult += '</div>';
+        }
+        emerResult += '</div>';
+      }
+      emerResult += '</div>';
+    }
+
+    showR(emerResult);
   } catch(e) {
     document.getElementById('emer-err').style.display = 'block';
     document.getElementById('emer-err').textContent = 'Could not generate guide. Please try again.';
